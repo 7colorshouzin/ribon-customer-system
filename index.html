@@ -132,7 +132,13 @@
             };
         }
 
-function renderCard(data) {
+        function renderCard(data) {
+            // もし data.code が無ければエラーを表示
+            if (!data.code) {
+                alert("会員コードの取得に失敗しました。");
+                return;
+            }
+
             document.getElementById('app').innerHTML = `
                 <div class="card bg-success text-white shadow-lg border-0 mb-3">
                     <div class="card-body p-4 text-center">
@@ -146,14 +152,15 @@ function renderCard(data) {
                         </div>
 
                         <div class="bg-white p-3 rounded mb-3">
-                            <img src="https://barcodeapi.org/api/128/${data.code}" class="img-fluid" alt="Barcode">
+                            <img src="https://barcodeapi.org/api/128/${data.code}" 
+                                style="max-width: 100%; height: auto;" 
+                                onerror="this.src='https://placehold.jp/24/cccccc/ffffff/250x80.png?text=BarcodeError'"
+                                alt="Barcode">
                         </div>
                         <p class="mb-0 small opacity-75">No. ${data.code}</p>
                     </div>
                 </div>
                 <div class="text-center mt-3">
-                    <p class="text-muted small">お会計時にこの画面をご提示ください。<br>
-                    <span style="font-size: 0.75rem;">※ポイントの反映には時間がかかる場合があります。</span></p>
                     <button onclick="location.reload()" class="btn btn-outline-secondary btn-sm rounded-pill mt-2">
                         情報を更新する
                     </button>
