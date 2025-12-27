@@ -57,61 +57,102 @@
             document.getElementById('app').innerHTML = `
                 <div class="card shadow p-4 mb-5">
                     <h5 class="text-center mb-4 fw-bold">新規会員登録</h5>
-                    <form id="regForm">
-                        <div class="row g-2 mb-3">
-                            <div class="col-6"><label class="form-label required">姓</label><input type="text" id="lastName" class="form-control" placeholder="山田" required></div>
-                            <div class="col-6"><label class="form-label required">名</label><input type="text" id="firstName" class="form-control" placeholder="太郎" required></div>
+                    <form id="regForm" novalidate> <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label required">姓</label>
+                                <input type="text" id="lastName" class="form-control" placeholder="山田" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label required">名</label>
+                                <input type="text" id="firstName" class="form-control" placeholder="太郎" required>
+                            </div>
                         </div>
                         <div class="row g-2 mb-3">
-                            <div class="col-6"><label class="form-label required">セイ（カナ）</label><input type="text" id="lastKana" class="form-control" placeholder="ヤマダ" required></div>
-                            <div class="col-6"><label class="form-label required">メイ（カナ）</label><input type="text" id="firstKana" class="form-control" placeholder="タロウ" required></div>
+                            <div class="col-6">
+                                <label class="form-label required">セイ（カナ）</label>
+                                <input type="text" id="lastKana" class="form-control" placeholder="ヤマダ" pattern="^[ァ-ヶー]+$" title="全角カタカナで入力してください" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label required">メイ（カナ）</label>
+                                <input type="text" id="firstKana" class="form-control" placeholder="タロウ" pattern="^[ァ-ヶー]+$" title="全角カタカナで入力してください" required>
+                            </div>
                         </div>
-                        <div class="mb-3"><label class="form-label required">電話番号</label><input type="tel" id="mobileNumber" class="form-control" placeholder="09012345678" required></div>
-                        <div class="mb-3"><label class="form-label required">メールアドレス</label><input type="email" id="mailAddress" class="form-control" placeholder="example@mail.com" required></div>
+                        <div class="mb-3">
+                            <label class="form-label required">電話番号</label>
+                            <input type="tel" id="mobileNumber" class="form-control" placeholder="09012345678" pattern="^\\d{10,11}$" title="ハイフンなしの10桁または11桁の数字で入力してください" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label required">メールアドレス</label>
+                            <input type="email" id="mailAddress" class="form-control" placeholder="example@mail.com" required>
+                        </div>
                         <div class="row g-2 mb-3">
-                            <div class="col-6"><label class="form-label required">性別</label>
-                                <select id="sex" class="form-select">
+                            <div class="col-6">
+                                <label class="form-label required">性別</label>
+                                <select id="sex" class="form-select" required>
+                                    <option value="">選択してください</option>
                                     <option value="0">不明</option>
                                     <option value="1">男性</option>
                                     <option value="2">女性</option>
                                 </select>
                             </div>
-                            <div class="col-6"><label class="form-label required">生年月日</label><input type="date" id="birthDate" class="form-control"></div>
+                            <div class="col-6">
+                                <label class="form-label required">生年月日</label>
+                                <input type="date" id="birthDate" class="form-control" required>
+                            </div>
                         </div>
-                        <div class="mb-3"><label class="form-label required">郵便番号</label><input type="text" id="postCode" class="form-control" placeholder="1234567" required></div>
-                        <div class="mb-3"><label class="form-label required">住所</label><input type="text" id="address" class="form-control" placeholder="東京都渋谷区..." required></div>
-                        <div class="mb-3"><label class="form-label required">SNSへの写真掲載について</label>
-                                <select id="note" class="form-select">
-                                    <option value="SNS掲載可">当店SNSへの写真掲載許諾</option>
-                                    <option value="SNS掲載不可">当店SNSへの写真掲載不可</option>
-                                </select></div>
-                        <div class="mb-3"><label class="form-label">備考</label><textarea id="note2" class="form-control" placeholder="アレルギーや紹介者名（あれば）" rows="2"></textarea></div>
+                        <div class="mb-3">
+                            <label class="form-label required">郵便番号</label>
+                            <input type="text" id="postCode" class="form-control" placeholder="1234567" pattern="^\\d{7}$" title="ハイフンなしの7桁の数字で入力してください" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label required">住所</label>
+                            <input type="text" id="address" class="form-control" placeholder="東京都渋谷区..." required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label required">SNSへの写真掲載について</label>
+                            <select id="note" class="form-select" required>
+                                <option value="SNS掲載可">当店SNSへの写真掲載許諾</option>
+                                <option value="SNS掲載不可">当店SNSへの写真掲載不可</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">備考</label>
+                            <textarea id="note2" class="form-control" placeholder="アレルギーや紹介者名（あれば）" rows="2"></textarea>
+                        </div>
                         <button type="submit" id="subBtn" class="btn btn-success w-100 py-3 mt-3 fw-bold">登録を完了する</button>
                     </form>
                 </div>`;
-
-            document.getElementById('regForm').onsubmit = async (e) => {
+        
+            const form = document.getElementById('regForm');
+            form.onsubmit = async (e) => {
                 e.preventDefault();
+        
+                // --- バリデーションチェック ---
+                if (!form.checkValidity()) {
+                    form.reportValidity(); // 吹き出しでエラーを表示
+                    return;
+                }
+        
                 const btn = document.getElementById('subBtn');
                 btn.disabled = true;
                 btn.innerText = "スマレジに登録中...";
-
+        
                 const payload = {
                     lineUserId: userId,
-                    lastName: document.getElementById('lastName').value,
-                    firstName: document.getElementById('firstName').value,
-                    lastKana: document.getElementById('lastKana').value,
-                    firstKana: document.getElementById('firstKana').value,
-                    mobileNumber: document.getElementById('mobileNumber').value,
-                    mailAddress: document.getElementById('mailAddress').value,
+                    lastName: document.getElementById('lastName').value.trim(),
+                    firstName: document.getElementById('firstName').value.trim(),
+                    lastKana: document.getElementById('lastKana').value.trim(),
+                    firstKana: document.getElementById('firstKana').value.trim(),
+                    mobileNumber: document.getElementById('mobileNumber').value.replace(/[\\s-]/g, ''),
+                    mailAddress: document.getElementById('mailAddress').value.trim(),
                     sex: document.getElementById('sex').value,
                     birthDate: document.getElementById('birthDate').value,
-                    postCode: document.getElementById('postCode').value,
-                    address: document.getElementById('address').value,
+                    postCode: document.getElementById('postCode').value.replace(/[\\s-]/g, ''),
+                    address: document.getElementById('address').value.trim(),
                     note: document.getElementById('note').value,
-                    note2: document.getElementById('note2').value
+                    note2: document.getElementById('note2').value.trim() || null // 空ならnull
                 };
-
+        
                 try {
                     const response = await fetch(GAS_URL, {
                         method: 'POST',
