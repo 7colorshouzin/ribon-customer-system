@@ -4,13 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RiboN 会員証</title>
+    <!-- LIFF SDK -->
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- JsBarcode (バーコード生成ライブラリ ) -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    
     <style>
-        body { background-color: #f8f9fa; font-size: 0.9rem; }
+        body { background-color: #d0c2b2; font-size: 0.9rem; }
         .card { border-radius: 12px; border: none; }
         .required::after { content: " *"; color: #dc3545; }
         .form-label { font-weight: 600; color: #495057; }
+        /* バーコード画像の調整 */
+        #barcode { max-width: 100%; height: auto; }
     </style>
 </head>
 <body>
@@ -23,8 +30,27 @@
 
     <script>
         // --- 設定値 ---
-        const LIFF_ID = "2008741629-Jtd0iNts";
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbw-vH-R-6U9Wq-DW5d_6ELXpspyR6K8PtVvytv38rOpvMfFg6dwYda4dnIUAI_St8Y/exec"; 
+        const LIFF_ID = "2008741629-Jtd0iNts"; // DEV
+        // const LIFF_ID = "2008741631-8XHl1q1V";
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbw9ZUHJlnjIqESpccC020F9uz6L-DOr_aMuAwd8-VhRnUPLGdgWWcXgVET1gnA93kw/exec"; 
+
+        // XSS対策用のエスケープ関数
+        const escapeHTML = (str ) => {
+            if (typeof str !== 'string') return str;
+            return str.replace(/[&<>'"]/g, match => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+            })[match]);
+        };
+
+        // タイムアウト付きのfetch関数
+        const fetchWithTimeout = async (resource, options = {}) => {
+            const { timeout = 15000 } = options;
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeout);
+            const response = await fetch(resource, { ...options, signal: controller.signal });
+            clearTimeout(id);
+            return response;
+        };
 
         async function init() {
             const status = document.getElementById('status');
@@ -36,7 +62,9 @@
                 const userId = profile.userId;
 
                 status.innerText = "会員情報を照会しています...";
-                const res = await fetch(`${GAS_URL}?uid=${userId}`);
+                
+                // タイムアウト付きでGASを呼び出し
+                const res = await fetchWithTimeout(`${GAS_URL}?uid=${userId}`, { timeout: 15000 });
                 const data = await res.json();
 
                 document.getElementById('loading').style.display = 'none';
@@ -49,7 +77,11 @@
                     renderForm(userId);
                 }
             } catch (err) {
-                status.innerHTML = `<div class="alert alert-danger mx-3">起動エラー: ${err.message}</div>`;
+                let errorMsg = err.message;
+                if (err.name === 'AbortError') {
+                    errorMsg = "サーバーの応答がタイムアウトしました。通信環境を確認し、再読み込みしてください。";
+                }
+                status.innerHTML = `<div class="alert alert-danger mx-3">エラー: ${escapeHTML(errorMsg)}</div>`;
             }
         }
 
@@ -57,7 +89,9 @@
             document.getElementById('app').innerHTML = `
                 <div class="card shadow p-4 mb-5">
                     <h5 class="text-center mb-4 fw-bold">新規会員登録</h5>
-                    <form id="regForm" novalidate> <div class="row g-2 mb-3">
+                    <form id="regForm" novalidate>
+                        <!-- (フォームの内容は元コードと同じため省略・必要に応じて適宜復元してください) -->
+                        <div class="row g-2 mb-3">
                             <div class="col-6">
                                 <label class="form-label required">姓</label>
                                 <input type="text" id="lastName" class="form-control" placeholder="山田" required>
@@ -127,9 +161,8 @@
             form.onsubmit = async (e) => {
                 e.preventDefault();
         
-                // --- バリデーションチェック ---
                 if (!form.checkValidity()) {
-                    form.reportValidity(); // 吹き出しでエラーを表示
+                    form.reportValidity();
                     return;
                 }
         
@@ -143,20 +176,21 @@
                     firstName: document.getElementById('firstName').value.trim(),
                     lastKana: document.getElementById('lastKana').value.trim(),
                     firstKana: document.getElementById('firstKana').value.trim(),
-                    mobileNumber: document.getElementById('mobileNumber').value.replace(/[\\s-]/g, ''),
+                    mobileNumber: document.getElementById('mobileNumber').value.replace(/[\s-]/g, ''),
                     mailAddress: document.getElementById('mailAddress').value.trim(),
                     sex: document.getElementById('sex').value,
                     birthDate: document.getElementById('birthDate').value,
-                    postCode: document.getElementById('postCode').value.replace(/[\\s-]/g, ''),
+                    postCode: document.getElementById('postCode').value.replace(/[\s-]/g, ''),
                     address: document.getElementById('address').value.trim(),
                     note: document.getElementById('note').value,
-                    note2: document.getElementById('note2').value.trim() || null // 空ならnull
+                    note2: document.getElementById('note2').value.trim() || null
                 };
         
                 try {
-                    const response = await fetch(GAS_URL, {
+                    const response = await fetchWithTimeout(GAS_URL, {
                         method: 'POST',
-                        body: JSON.stringify(payload)
+                        body: JSON.stringify(payload),
+                        timeout: 20000 // POSTは少し長めに設定
                     });
                     const result = await response.json();
                     if (result.success) {
@@ -166,7 +200,11 @@
                         throw new Error(result.error || "登録に失敗しました");
                     }
                 } catch (err) {
-                    alert("エラー: " + err.message);
+                    let errorMsg = err.message;
+                    if (err.name === 'AbortError') {
+                        errorMsg = "サーバーの応答がタイムアウトしました。";
+                    }
+                    alert("エラー: " + errorMsg);
                     btn.disabled = false;
                     btn.innerText = "登録を完了する";
                 }
@@ -174,31 +212,33 @@
         }
 
         function renderCard(data) {
-            // もし data.code が無ければエラーを表示
             if (!data.code) {
                 alert("会員コードの取得に失敗しました。");
                 return;
             }
 
+            // XSS対策としてデータをエスケープ
+            const safeName = escapeHTML(data.name);
+            const safePoint = escapeHTML(String(data.point));
+            const safeCode = escapeHTML(String(data.code));
+
             document.getElementById('app').innerHTML = `
                 <div class="card bg-success text-white shadow-lg border-0 mb-3">
                     <div class="card-body p-4 text-center">
                         <p class="small text-uppercase mb-2" style="letter-spacing: 2px;">Membership Card</p>
-                        <h4 class="mb-4">${data.name} 様</h4>
+                        <h4 class="mb-4">${safeName} 様</h4>
                         
                         <div class="bg-white text-dark rounded-pill py-2 px-4 d-inline-block mb-4 shadow-sm">
                             <span class="small fw-bold">保有ポイント:</span>
-                            <span class="h4 mb-0 fw-bold text-success"> ${data.point} </span>
+                            <span class="h4 mb-0 fw-bold text-success"> ${safePoint} </span>
                             <span class="small">pt</span>
                         </div>
 
                         <div class="bg-white p-3 rounded mb-3">
-                            <img src="https://barcodeapi.org/api/128/${data.code}" 
-                                style="max-width: 100%; height: auto;" 
-                                onerror="this.src='https://placehold.jp/24/cccccc/ffffff/250x80.png?text=BarcodeError'"
-                                alt="Barcode">
+                            <!-- 外部APIではなく、JsBarcode用のsvgタグを配置 -->
+                            <svg id="barcode"></svg>
                         </div>
-                        <p class="mb-0 small opacity-75">No. ${data.code}</p>
+                        <p class="mb-0 small opacity-75">No. ${safeCode}</p>
                     </div>
                 </div>
                 <div class="text-center mt-3">
@@ -206,6 +246,15 @@
                         情報を更新する
                     </button>
                 </div>`;
+            
+            // JsBarcodeを使用してローカルでバーコードを生成
+            JsBarcode("#barcode", safeCode, {
+                format: "CODE128",
+                lineColor: "#000",
+                width: 2,
+                height: 60,
+                displayValue: false // 下部に番号は表示しない（HTML側で表示しているため）
+            });
         }
         init();
     </script>
