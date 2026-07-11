@@ -35,7 +35,7 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbw9ZUHJlnjIqESpccC020F9uz6L-DOr_aMuAwd8-VhRnUPLGdgWWcXgVET1gnA93kw/exec"; 
 
         // XSS対策用のエスケープ関数
-        const escapeHTML = (str ) => {
+        const escapeHTML = (str) => {
             if (typeof str !== 'string') return str;
             return str.replace(/[&<>'"]/g, match => ({
                 '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
