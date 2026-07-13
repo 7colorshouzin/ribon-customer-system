@@ -64,7 +64,7 @@
                 status.innerText = "会員情報を照会しています...";
                 
                 // タイムアウト付きでGASを呼び出し
-                const res = await fetchWithTimeout(`${GAS_URL}?uid=${userId}`, { timeout: 15000 });
+                const res = await fetchWithTimeout(`${GAS_URL}?uid=${userId}&t=${Date.now()}`, { timeout: 15000 });
                 const data = await res.json();
 
                 document.getElementById('loading').style.display = 'none';
