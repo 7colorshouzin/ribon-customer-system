@@ -1,3 +1,54 @@
+GASソースの改善点を教えてください - Manus
+/
+
+共有
+pasted_content_5.txt
+テキスト · 21.03 KB
+添付がフロントのソースです。
+
+法人のプライバシーポリシーページは以下
+https://7colors-group.com/privacy/
+Lite
+承知いたしました。法人のプライバシーポリシーへの同意文言を追加し、法的・規約的な要件を満たした「完全版」のフロントエンドコードを作成します。少々お待ちください。
+
+Lite
+プライバシーポリシーの同意文言を追加し、これまでの最適化（スケルトンスクリーン、バーコード生成、キャッシュ対策等）をすべて統合した「最終版」のフロントエンドコードを作成しました。
+追加・修正内容
+プライバシーポリシーの明記:
+登録ボタンのすぐ上に、株式会社7colorsのプライバシーポリシー（https://7colors-group.com/privacy/ ）へのリンクと同意文言を追加しました。
+ボタンのラベルを「同意して登録を完了する」に変更し、法的な同意形成をより明確にしました。
+これまでの改善項目の統合:
+スケルトンスクリーン: データ読み込み中のガタつきを抑え、体感速度を向上。
+JsBarcode: 外部APIへの依存を排除し、店舗での読み取り安定性を確保。
+キャッシュ対策: &t=${Date.now()} による最新データ取得の保証。
+セキュリティ: XSS対策のエスケープ処理を徹底。
+今後の運用について
+この index_final.html をGitHubに反映いただければ、LINEミニアプリとしての要件を満たし、かつユーザー体験の優れた会員証システムとして運用を開始できます。
+これにて、ご依頼いただいた一連の改修とドキュメント整理がすべて完了いたしました。RiboN様のビジネスが、この新しい会員証システムを通じてさらに発展することを心より応援しております！また何かお手伝いできることがあれば、いつでもお声がけください。
+index_final.html
+コード · 16.85 KB
+このタスク内のすべてのファイルを表示
+タスクが完了しました
+この結果はどうでしたか？
+おすすめの追跡質問
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RiboN 会員証</title>
+    <!-- キャッシュ無効化ヘッダー -->
+    <meta http-equiv="Cache-Control" 
+
+
+Google GeminiOpenAI
+
+クラウドコンピュータ
+新規
+
+Manus is an AI Agent and can make mistakes. Please double-check before use.
+
+Draggable item nav/a1c2fy5DCzw9vhxoZNKq8L was dropped over droppable area Ly2jcTqxs4ZvgW2npcn74c
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -66,6 +117,16 @@
         /* フォーム表示時のスタイル */
         #form-section {
             display: none;
+        }
+
+        /* プライバシーポリシーのリンクスタイル */
+        .privacy-link {
+            color: #198754;
+            text-decoration: underline;
+        }
+        .privacy-text {
+            font-size: 0.8rem;
+            color: #6c757d;
         }
     </style>
 </head>
@@ -169,7 +230,13 @@
                         <label class="form-label">備考</label>
                         <textarea id="note2" class="form-control" placeholder="アレルギーや紹介者名（あれば）" rows="2"></textarea>
                     </div>
-                    <button type="submit" id="subBtn" class="btn btn-success w-100 py-3 mt-3 fw-bold">登録を完了する</button>
+                    
+                    <!-- プライバシーポリシー同意文言 -->
+                    <div class="mb-3 text-center privacy-text">
+                        登録ボタンを押すことで、<a href="https://7colors-group.com/privacy/" target="_blank" class="privacy-link">株式会社7&COLORS プライバシーポリシー</a>に同意したものとみなします。
+                    </div>
+
+                    <button type="submit" id="subBtn" class="btn btn-success w-100 py-3 mt-2 fw-bold">同意して登録を完了する</button>
                 </form>
             </div>
         </div>
@@ -240,76 +307,6 @@
         }
 
         function renderForm(userId) {
-            document.getElementById('form-section').innerHTML = `
-                <div class="card shadow p-4 mb-5">
-                    <h5 class="text-center mb-4 fw-bold">新規会員登録</h5>
-                    <form id="regForm" novalidate>
-                        <div class="row g-2 mb-3">
-                            <div class="col-6">
-                                <label class="form-label required">姓</label>
-                                <input type="text" id="lastName" class="form-control" placeholder="山田" required>
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label required">名</label>
-                                <input type="text" id="firstName" class="form-control" placeholder="太郎" required>
-                            </div>
-                        </div>
-                        <div class="row g-2 mb-3">
-                            <div class="col-6">
-                                <label class="form-label required">セイ（カナ）</label>
-                                <input type="text" id="lastKana" class="form-control" placeholder="ヤマダ" pattern="^[ァ-ヶー]+$" title="全角カタカナで入力してください" required>
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label required">メイ（カナ）</label>
-                                <input type="text" id="firstKana" class="form-control" placeholder="タロウ" pattern="^[ァ-ヶー]+$" title="全角カタカナで入力してください" required>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label required">電話番号</label>
-                            <input type="tel" id="mobileNumber" class="form-control" placeholder="09012345678" pattern="^\d{10,11}$" title="ハイフンなしの10桁または11桁の数字で入力してください" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label required">メールアドレス</label>
-                            <input type="email" id="mailAddress" class="form-control" placeholder="example@mail.com" required>
-                        </div>
-                        <div class="row g-2 mb-3">
-                            <div class="col-6">
-                                <label class="form-label required">性別</label>
-                                <select id="sex" class="form-select" required>
-                                    <option value="">選択してください</option>
-                                    <option value="0">不明</option>
-                                    <option value="1">男性</option>
-                                    <option value="2">女性</option>
-                                </select>
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label required">生年月日</label>
-                                <input type="date" id="birthDate" class="form-control" required>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label required">郵便番号</label>
-                            <input type="text" id="postCode" class="form-control" placeholder="1234567" pattern="^\d{7}$" title="ハイフンなしの7桁の数字で入力してください" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label required">住所</label>
-                            <input type="text" id="address" class="form-control" placeholder="東京都渋谷区..." required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label required">SNSへの施術写真掲載について</label>
-                            <select id="note" class="form-select" required>
-                                <option value="SNS掲載可">当店SNSへの施術写真掲載許諾</option>
-                                <option value="SNS掲載不可">当店SNSへの施術写真掲載不可</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">備考</label>
-                            <textarea id="note2" class="form-control" placeholder="アレルギーや紹介者名（あれば）" rows="2"></textarea>
-                        </div>
-                        <button type="submit" id="subBtn" class="btn btn-success w-100 py-3 mt-3 fw-bold">登録を完了する</button>
-                    </form>
-                </div>`;
-        
             const form = document.getElementById('regForm');
             form.onsubmit = async (e) => {
                 e.preventDefault();
@@ -359,7 +356,7 @@
                     }
                     alert("エラー: " + errorMsg);
                     btn.disabled = false;
-                    btn.innerText = "登録を完了する";
+                    btn.innerText = "同意して登録を完了する";
                 }
             };
         }
